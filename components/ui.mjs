@@ -1,0 +1,35 @@
+export const escape = value => String(value).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+export function icon(name='arrow', cls='') {
+  const paths = {
+    arrow:'<path d="M5 12h14m-6-6 6 6-6 6"/>',
+    search:'<circle cx="10.7" cy="10.7" r="6.7"/><path d="m16 16 4.5 4.5"/>',
+    book:'<path d="M12 6c-3-2-6-2-9-1v14c3-1 6-1 9 1 3-2 6-2 9-1V5c-3-1-6-1-9 1Z"/><path d="M12 6v14"/>',
+    flask:'<path d="M9 3h6m-5 0v7l-6 9a1.4 1.4 0 0 0 1.2 2h13.6a1.4 1.4 0 0 0 1.2-2l-6-9V3M7 15h10"/>',
+    compass:'<circle cx="12" cy="12" r="9"/><path d="m16 8-2.5 5.5L8 16l2.5-5.5L16 8Z"/>',
+    bookmark:'<path d="M6 3h12v18l-6-4-6 4V3Z"/>',
+    check:'<path d="m5 12 4 4L19 6"/>',
+    menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',
+    close:'<path d="m6 6 12 12M18 6 6 18"/>',
+    cell:'<ellipse cx="12" cy="12" rx="9" ry="8" transform="rotate(-25 12 12)"/><ellipse cx="12" cy="12" rx="3" ry="4"/><path d="M6 10h.01M17 14h.01M10 6h.01"/>',
+    leaf:'<path d="M20 3C7 1 1 8 6 16s16 3 14-13Z"/><path d="m4 21 12-12"/>',
+    dna:'<path d="M7 2c0 7 10 13 10 20M17 2c0 7-10 13-10 20M8 5h8M9 9h6M9 15h6M8 19h8"/>',
+    branch:'<path d="M12 21V10M12 14 5 8V3M12 10l7-5V2M12 17l7-4v-3"/><circle cx="5" cy="3" r="1"/>',
+    heart:'<path d="M12 21 3.5 12.5C-3 5 7-2 12 6c5-8 15-1 8.5 6.5L12 21Z"/>',
+    organism:'<path d="M5 7C1 11 3 19 10 20s13-5 10-11S9 2 5 7Z"/><path d="M8 10h.01M15 13h.01M11 16h.01M5 4 3 2M20 17l2 2"/>',
+    spark:'<path d="m12 2 2.8 7.2L22 12l-7.2 2.8L12 22l-2.8-7.2L2 12l7.2-2.8L12 2Z"/>',
+    question:'<circle cx="12" cy="12" r="9"/><path d="M9 9a3 3 0 1 1 5 2c-2 1-2 1.5-2 3M12 17h.01"/>',
+    download:'<path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/>',
+    globe:'<circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18"/>'
+  };
+  return `<svg class="icon ${cls}" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name]||paths.arrow}</svg>`;
+}
+export function logo(){return `<a class="brand" href="/" aria-label="BioSins home"><svg width="29" height="37" viewBox="0 0 29 37" fill="none" aria-hidden="true"><path d="M7 2c0 11 15 22 15 33M22 2C22 13 7 24 7 35" stroke="currentColor" stroke-width="2.3"/><path d="M8 6h13M11 12h7M11 25h7M8 31h13" stroke="currentColor" stroke-width="1.5"/><circle cx="14.5" cy="18.5" r="2" fill="currentColor"/></svg><span>Bio<span class="brand-light">Sins</span><i></i></span></a>`;}
+export function breadcrumbs(items){return `<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="/">Home</a>${items.map(([text,url])=>`<span aria-hidden="true">/</span>${url?`<a href="${url}">${escape(text)}</a>`:`<span aria-current="page">${escape(text)}</span>`}`).join('')}</nav>`;}
+export function button(label,href,kind='primary',extra=''){return `<a class="button button-${kind}" href="${href}" ${extra}>${label}${icon('arrow')}</a>`;}
+export function tag(text,kind=''){return `<span class="tag ${kind}">${escape(text)}</span>`;}
+export function pageIntro({eyebrow,title,description,crumbs=[],extra=''}){return `${breadcrumbs(crumbs)}<header class="page-intro"><p class="eyebrow">${eyebrow}</p><h1>${title}</h1><p class="lede">${description}</p>${extra}</header>`;}
+export function articleCard(item,featured=false){return `<a class="article-card ${featured?'featured':''}" href="${item.url}"><div class="card-art art-${item.mode}">${icon(item.mode==='academics'?'cell':item.mode==='exams'?'flask':'compass')}<span>${item.type}</span></div><div class="article-card-body"><p class="eyebrow">${item.scopeLabel}</p><h3>${escape(item.title)}</h3><p>${escape(item.subtitle)}</p><span class="text-link">${item.mode==='exams'?'Revise this concept':'Open the '+(item.mode==='explore'?'explainer':'note')}${icon('arrow')}</span></div></a>`;}
+export function shell({title,description,content,pillar='',bodyClass='',path='/',origin='',indexable=true,styles=[],scripts=[],colorScheme='light'}){
+const nav=[['Academics','/academics/','academics'],['Competitive Exams','/exams/','exams'],['Explore','/explore/','explore']];
+return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${escape(title)}${title==='BioSins'?' — Biology, made clear':' · BioSins'}</title><meta name="description" content="${escape(description)}"><meta name="theme-color" content="#163d32"><meta name="color-scheme" content="${escape(colorScheme)}"><meta name="robots" content="${indexable?'index, follow':'noindex, follow'}"><link rel="icon" type="image/svg+xml" href="/assets/favicon.svg"><link rel="stylesheet" href="/css/site.css"><link rel="stylesheet" href="/css/premium.css">${styles.map(url=>`<link rel="stylesheet" href="${escape(url)}">`).join('')}<script type="module" src="/js/app.js"></script>${scripts.map(url=>`<script type="module" src="${escape(url)}"></script>`).join('')}${origin?`<link rel="canonical" href="${escape(origin+path)}"><meta property="og:url" content="${escape(origin+path)}">`:''}<meta property="og:title" content="${escape(title)} · BioSins"><meta property="og:description" content="${escape(description)}"><meta property="og:type" content="website"></head><body class="${bodyClass}" data-pillar="${pillar}"><a class="skip-link" href="#main">Skip to content</a><header class="site-header"><div class="header-inner">${logo()}<nav class="desktop-nav" aria-label="Main navigation">${nav.map(([label,url,key])=>`<a href="${url}" ${pillar===key?'aria-current="page"':''}>${label}</a>`).join('')}</nav><div class="header-actions"><a class="icon-button search-link" href="/search/" aria-label="Search BioSins">${icon('search')}</a><a class="saved-link" href="/saved/" aria-label="My learning">${icon('bookmark')}<span>My learning</span><span data-saved-count class="saved-count" hidden>0</span></a><button class="icon-button menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="mobile-nav">${icon('menu')}</button></div></div><nav id="mobile-nav" class="mobile-nav" aria-label="Mobile navigation" hidden>${nav.map(([label,url,key])=>`<a href="${url}" ${pillar===key?'aria-current="page"':''}>${label}${icon('arrow')}</a>`).join('')}<a href="/search/">Search${icon('search')}</a><a href="/about/">About BioSins${icon('arrow')}</a><a href="/support/">Support BioSins${icon('arrow')}</a></nav></header><main id="main" tabindex="-1">${content}</main><footer class="site-footer"><div class="footer-top">${logo()}<p>A little curiosity goes a long way.</p><a href="/support/" class="footer-support">Free to learn. Built with care.${icon('arrow')}</a></div><div class="footer-bottom"><span>© 2026 BioSins · Biology first.</span><nav aria-label="Footer"><a href="/about/">About</a><a href="/support/">Support</a><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/accessibility/">Accessibility</a></nav><span class="edition-label">REFERENCE EDITION · 01</span></div></footer><div class="toast" role="status" aria-live="polite" hidden></div></body></html>`;
+}

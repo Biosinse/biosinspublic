@@ -1,0 +1,21 @@
+import {mkdir,rm,writeFile,copyFile,cp,readFile} from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {makePages} from '../components/pages.mjs';
+import {shell} from '../components/ui.mjs';
+import {catalog,levels,exams,categories} from '../data/catalog.mjs';
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
+const out=path.join(root,'dist');
+const origin=new URL(process.env.BIOSINS_SITE_ORIGIN || 'https://biosins.goofyseal67.chatgpt.site').origin;
+await rm(out,{recursive:true,force:true});await mkdir(out,{recursive:true});
+for(const directory of ['css','js','assets']) await cp(path.join(root,directory),path.join(out,directory),{recursive:true});
+const pages=makePages();
+for(const page of pages){const directory=path.join(out,page.path);await mkdir(directory,{recursive:true});await writeFile(path.join(directory,'index.html'),shell({...page,origin}));}
+await copyFile(path.join(out,'404/index.html'),path.join(out,'404.html'));
+await mkdir(path.join(out,'data'),{recursive:true});
+await writeFile(path.join(out,'data/catalog.json'),JSON.stringify({catalog,levels,exams,categories}));
+const sitemapPages=pages.filter(page=>page.indexable);
+await writeFile(path.join(out,'sitemap.xml'),'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+sitemapPages.map(page=>`  <url><loc>${origin+page.path}</loc></url>`).join('\n')+'\n</urlset>\n');
+await writeFile(path.join(out,'robots.txt'),`User-agent: *\nAllow: /\nDisallow: /search/\nDisallow: /saved/\nDisallow: /404/\nSitemap: ${origin}/sitemap.xml\n`);
+await writeFile(path.join(out,'_headers'),`/*\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n  X-Frame-Options: DENY\n  Permissions-Policy: camera=(), microphone=(), geolocation=()\n  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'\n`);
+console.log(JSON.stringify({pages:pages.length,referenceConcepts:new Set(catalog.map(item=>item.conceptId)).size,output:out}));
