@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {execFileSync} from 'node:child_process';
+import {createHash} from 'node:crypto';
+const gitBlobSha=(content)=>{const data=Buffer.from(content,'utf8');return createHash('sha1').update('blob '+data.length+'\0').update(data).digest('hex');};
 import {resourceResponse,factorialContrast} from '../js/ecology-a3-model.mjs';
 import {ecologyA3} from '../data/ecology.mjs';
 import {catalog} from '../data/catalog.mjs';
@@ -57,9 +58,18 @@ test('A3 retains complete structure, reviewed figures, references and adjacent-n
  assert.doesNotMatch(html,/<script(?![^>]*\bsrc=)[^>]*>/);
  assert.doesNotMatch(html,/\[\d+,\s*\d+\]/);
  for(const word of ['quiescence','diapause','pseudoreplication','reciprocal transplant','common-garden','apparent competition','complementary','cross-tolerance','reaction norm','nonadditivity','R*','difference-in-differences'])assert.ok(html.toLowerCase().includes(word.toLowerCase()),word);
- for(const file of ['components/ecology-a1.html','css/ecology-a2.css','js/ecology-a2.js'])assert.equal(await readFile(new URL('../'+file,import.meta.url),'utf8'),execFileSync('git',['show','a8e0a57eb5ce53a137478b8ccb2d0bb07ca25579:'+file],{encoding:'utf8'}));
+ const reviewedFiles={
+  'components/ecology-a1.html':'e7776a101ab56fdcb8c4f93e23c94150335cc2ca',
+  'css/ecology-a2.css':'7bb3a7f89212c7fbf57971bbbc243d55c76b53c3',
+  'js/ecology-a2.js':'5e4ab4b51b640fc3a0e9710c3d941912',
+  'components/ecology-a2.html':'3c1d13020a0f24df5b54410d31245874501d4850'
+ };
+ for(const [file,expectedSha] of Object.entries(reviewedFiles)){
+  const current=await readFile(new URL('../'+file,import.meta.url),'utf8');
+  assert.equal(gitBlobSha(current),expectedSha,'Reviewed source changed: '+file);
+ }
  const a2=await readFile(new URL('../components/ecology-a2.html',import.meta.url),'utf8');
- assert.equal(a2,execFileSync('git',['show','a8e0a57eb5ce53a137478b8ccb2d0bb07ca25579:components/ecology-a2.html'],{encoding:'utf8'}).replace('Next / A3 · In preparation','Next / A3'));
+ assert.ok(a2.includes('Next / A3'));
 });
 function lum(hex){const c=hex.slice(1).match(/../g).map(v=>parseInt(v,16)/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4);return .2126*c[0]+.7152*c[1]+.0722*c[2];}
 test('A3 reading palettes and figure labels maintain contrast in both themes',async()=>{
