@@ -61,7 +61,7 @@ test('A3 retains complete structure, reviewed figures, references and adjacent-n
  const reviewedFiles={
   'components/ecology-a1.html':'e7776a101ab56fdcb8c4f93e23c94150335cc2ca',
   'css/ecology-a2.css':'7bb3a7f89212c7fbf57971bbbc243d55c76b53c3',
-  'js/ecology-a2.js':'5e4ab4b51b640fc3a0e9710c3d941912',
+  'js/ecology-a2.js':'faa05cdf9294a8b569634e5a04c2db270f254a20',
   'components/ecology-a2.html':'3c1d13020a0f24df5b54410d31245874501d4850'
  };
  for(const [file,expectedSha] of Object.entries(reviewedFiles)){
