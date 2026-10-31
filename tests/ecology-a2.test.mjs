@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {execFileSync} from 'node:child_process';
+import {createHash} from 'node:crypto';
+const gitBlobSha=(content)=>{const data=Buffer.from(content,'utf8');return createHash('sha1').update('blob '+data.length+'\0').update(data).digest('hex');};
 import {calculateQ10,attenuatedLight,hydrogenActivityRatio} from '../js/ecology-a2-model.mjs';
 import {ecologyA2} from '../data/ecology.mjs';
 import {catalog} from '../data/catalog.mjs';
@@ -48,8 +49,15 @@ test('A2 includes the complete manuscript structure, accessible controls and cor
  assert.doesNotMatch(html,/data:image\/|fonts\.googleapis|React Artifact| style=| onclick=/i);
  assert.doesNotMatch(html,/<script(?![^>]*\bsrc=)[^>]*>/);
  // These A1 content, styles and interactions must remain byte-for-byte unchanged.
- for(const file of ['components/ecology-a1.html','css/ecology.css','css/ecology-meta.css','js/ecology-note.js']){
-  assert.equal(await readFile(new URL('../'+file,import.meta.url),'utf8'),execFileSync('git',['show','bb50cf2f886aa3523c35b893ebb38711fa6e3bab:'+file],{encoding:'utf8'}));
+ const reviewedFiles={
+  'components/ecology-a1.html':'e7776a101ab56fdcb8c4f93e23c94150335cc2ca',
+  'css/ecology.css':'95a1429d2c2e0ea7c088ad38bccdb8e8d54ea13a',
+  'css/ecology-meta.css':'efe45d073c19a72ae463f2130ebcd86009a2f47a',
+  'js/ecology-note.js':'88dc0ce8f2e137fdb52066adb652d3cb836fff20'
+ };
+ for(const [file,expectedSha] of Object.entries(reviewedFiles)){
+  const current=await readFile(new URL('../'+file,import.meta.url),'utf8');
+  assert.equal(gitBlobSha(current),expectedSha,'Reviewed source changed: '+file);
  }
 });
 function luminance(hex){const rgb=hex.slice(1).match(/../g).map(v=>parseInt(v,16)/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4);return .2126*rgb[0]+.7152*rgb[1]+.0722*rgb[2];}
